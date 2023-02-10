@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "offlineskins",
+  "version": "${version}",
+
+  "name": "Offline Skins",
+  "description": "load a locally cached skin when you can't connect to the servers",
+  "authors": [
+    "DiamondDev"
+  ],
+  "contact": {
+    "homepage": "https://diamonddevv.github.io/",
+    "sources": "https://github.com/diamonddevv/offline-skins"
+  },
+
+  "license": "CC0-1.0",
+  "icon": "assets/offlineskins/icon.png",
+
+  "environment": "*",
+
+  "entrypoints": {
+    "client": [
+      "net.diamonddev.offlineskins.OfflineSkins"
+    ]
+  },
+
+  "mixins": [
+    "offlineskins.mixins.json"
+  ],
+
+  "accessWidener": "offlineskins.accesswidener",
+
+
+  "depends": {
+    "fabricloader": ">=0.14.6",
+    "fabric": "*",
+    "minecraft": "1.19.3",
+    "java": ">=17"
+  }
+}
