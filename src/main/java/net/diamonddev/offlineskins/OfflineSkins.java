@@ -1,10 +1,10 @@
 package net.diamonddev.offlineskins;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
+import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.impl.FabricLoaderImpl;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.TextureManager;
@@ -16,6 +16,7 @@ import org.spongepowered.include.com.google.gson.Gson;
 import org.spongepowered.include.com.google.gson.stream.JsonReader;
 
 import java.io.*;
+import java.util.Scanner;
 
 public class OfflineSkins implements ClientModInitializer {
 
@@ -40,7 +41,7 @@ public class OfflineSkins implements ClientModInitializer {
 
             if (FabricLoaderImpl.INSTANCE.isDevelopmentEnvironment()) {
                 LOGGER.info("## OfflineSkin Metadata ##");
-                LOGGER.info("## Slim Arms?: " + METADATA.slimarms);
+                LOGGER.info("## Slim Arms?: " + METADATA.slim_model);
                 LOGGER.info("## Filename: " + METADATA.filename);
                 LOGGER.info("##########################");
             }
@@ -68,9 +69,9 @@ public class OfflineSkins implements ClientModInitializer {
         if (metadataFile.createNewFile()) LOGGER.info("skin_metadata.json was not found, and has been created.");
 
         LOGGER.info("Loading skin metadata..");
-        metadataFile = new File(file + "\\skin_metadata.json");
         JsonReader fileReader = new JsonReader(new FileReader(metadataFile));
-        if (!fileReader.hasNext()) {
+        Scanner fileScan = new Scanner(metadataFile);
+        if (!fileScan.hasNext()) {
             LOGGER.info("Populating metadata..");
             FileWriter write = new FileWriter(metadataFile);
 
@@ -83,40 +84,52 @@ public class OfflineSkins implements ClientModInitializer {
 
             write.close();
         }
+        fileScan.close();
 
         METADATA = decode(fileReader);
+
+        LOGGER.info("Checking if '{}' exists..", METADATA.filename);
+        if (!new File(file + "\\" + METADATA.filename).exists()) {
+            LOGGER.error("{} did not exist!", METADATA.filename);
+            throw new IOException();
+        }
+
         USES_METADATA_SKIN = true;
         LOGGER.info("Loaded metadata!");
+        fileReader.close();
     }
     public static File getLocalFolder() {
         return new File(System.getenv("APPDATA") + "\\.diamonddev");
     }
 
     public static LocalSkin constructSkinData(SkinMetadata metadata) {
-        return new LocalSkin(getLocalFolder() + "\\offline-skins\\" + metadata.filename, metadata.slimarms ? DefaultSkinHelper.Model.SLIM : DefaultSkinHelper.Model.WIDE);
+        return new LocalSkin(getLocalFolder() + "\\offline-skins\\" + metadata.filename, metadata.slim_model ? DefaultSkinHelper.Model.SLIM : DefaultSkinHelper.Model.WIDE);
     }
     public static DefaultSkinHelper.Model getModel() {
-        return METADATA.slimarms ? DefaultSkinHelper.Model.SLIM : DefaultSkinHelper.Model.WIDE;
+        return METADATA.slim_model ? DefaultSkinHelper.Model.SLIM : DefaultSkinHelper.Model.WIDE;
     }
 
     public static DefaultSkinHelper.Skin getNonLocalSkin() {
         return new DefaultSkinHelper.Skin(CACHED_SKIN_ID.toString(), getModel());
     }
 
+    public static boolean shouldUseCachedMetadataSkin() {
+        return FabricLoaderImpl.INSTANCE.isDevelopmentEnvironment();
+    }
+
     public static void copySkinFromMemoryToCache(TextureManager manager) throws IOException {
         LocalSkin localskin = constructSkinData(METADATA);
-
+        LOGGER.info("Copying {} to texture cache..", localskin.localPath());
         manager.registerTexture(CACHED_SKIN_ID, new NativeImageBackedTexture(NativeImage.read(new FileInputStream(localskin.localPath()))));
+        LOGGER.info("Copied {} to texture cache successfully! (Located at {})", localskin.localPath(), CACHED_SKIN_ID);
     }
-
-    private static final String JSON_KEY_SLIM_ARMS = "slim_model";
-    private static final String JSON_KEY_FILE = "filename";
 
     private static SkinMetadata decode(JsonReader metadataFile) {
-        JsonObject json = gson.fromJson(metadataFile, JsonObject.class);
-        return new SkinMetadata(json.get(JSON_KEY_SLIM_ARMS).getAsBoolean(), json.get(JSON_KEY_FILE).getAsString());
+        return gson.fromJson(metadataFile, SkinMetadata.class);
     }
 
-    public record SkinMetadata(boolean slimarms, String filename) {
+    public static class SkinMetadata {
+        boolean slim_model;
+        String filename;
     }
 }
