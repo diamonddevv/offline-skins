@@ -1,6 +1,6 @@
-package net.diamonddev.offlineskins.mixin;
+package net.diamonddev.stylishserverissues.mixin;
 
-import net.diamonddev.offlineskins.OfflineSkins;
+import net.diamonddev.stylishserverissues.StylishServerIssues;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.resource.ResourceManager;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,10 +14,10 @@ import java.io.IOException;
 public class TextureManagerMixin {
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void offlineskins$cacheSkin(ResourceManager resourceManager, CallbackInfo ci) {
-        if (OfflineSkins.USES_METADATA_SKIN) {
+    private void stylishserverissues$cacheSkin(ResourceManager resourceManager, CallbackInfo ci) {
+        if (StylishServerIssues.USES_METADATA_SKIN) {
             try {
-                OfflineSkins.copySkinFromMemoryToCache((TextureManager) (Object) this);
+                StylishServerIssues.copySkinFromMemoryToCache((TextureManager) (Object) this);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

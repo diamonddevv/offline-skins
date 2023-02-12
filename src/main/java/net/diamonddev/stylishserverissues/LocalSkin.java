@@ -1,4 +1,4 @@
-package net.diamonddev.offlineskins;
+package net.diamonddev.stylishserverissues;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

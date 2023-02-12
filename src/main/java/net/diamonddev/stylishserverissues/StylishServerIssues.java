@@ -1,10 +1,8 @@
-package net.diamonddev.offlineskins;
+package net.diamonddev.stylishserverissues;
 
-import com.google.gson.annotations.SerializedName;
-import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.impl.FabricLoaderImpl;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.TextureManager;
@@ -18,10 +16,10 @@ import org.spongepowered.include.com.google.gson.stream.JsonReader;
 import java.io.*;
 import java.util.Scanner;
 
-public class OfflineSkins implements ClientModInitializer {
+public class StylishServerIssues implements ClientModInitializer {
 
-    public static final String modid = "offlineskins";
-    public static final Logger LOGGER = LoggerFactory.getLogger("Offline Skins");
+    public static final String modid = "stylishserverissues";
+    public static final Logger LOGGER = LoggerFactory.getLogger("Stylish Server Issues");
 
     public static final Gson gson = new Gson();
 
@@ -40,7 +38,7 @@ public class OfflineSkins implements ClientModInitializer {
             load();
 
             if (FabricLoaderImpl.INSTANCE.isDevelopmentEnvironment()) {
-                LOGGER.info("## OfflineSkin Metadata ##");
+                LOGGER.info("## Cached Skin Metadata ##");
                 LOGGER.info("## Slim Arms?: " + METADATA.slim_model);
                 LOGGER.info("## Filename: " + METADATA.filename);
                 LOGGER.info("##########################");
@@ -61,9 +59,9 @@ public class OfflineSkins implements ClientModInitializer {
         boolean madeDDVDir = file.mkdir();
         if (madeDDVDir) LOGGER.info(".diamonddev directory was not found, and has been created.");
 
-        file = new File(file + "\\offline-skins");
+        file = new File(file + "\\stylish-server-issues");
         boolean madeDir = file.mkdir();
-        if (madeDir) LOGGER.info("offline-skins directory was not found, and has been created.");
+        if (madeDir) LOGGER.info("stylish-server-issues directory was not found, and has been created.");
 
         File metadataFile = new File(file + "\\skin_metadata.json");
         if (metadataFile.createNewFile()) LOGGER.info("skin_metadata.json was not found, and has been created.");
@@ -99,11 +97,11 @@ public class OfflineSkins implements ClientModInitializer {
         fileReader.close();
     }
     public static File getLocalFolder() {
-        return new File(System.getenv("APPDATA") + "\\.diamonddev");
+        return new File(FabricLoader.getInstance().getConfigDir() + "\\.diamonddev");
     }
 
     public static LocalSkin constructSkinData(SkinMetadata metadata) {
-        return new LocalSkin(getLocalFolder() + "\\offline-skins\\" + metadata.filename, metadata.slim_model ? DefaultSkinHelper.Model.SLIM : DefaultSkinHelper.Model.WIDE);
+        return new LocalSkin(getLocalFolder() + "\\stylish-server-issues\\" + metadata.filename, metadata.slim_model ? DefaultSkinHelper.Model.SLIM : DefaultSkinHelper.Model.WIDE);
     }
     public static DefaultSkinHelper.Model getModel() {
         return METADATA.slim_model ? DefaultSkinHelper.Model.SLIM : DefaultSkinHelper.Model.WIDE;
@@ -111,10 +109,6 @@ public class OfflineSkins implements ClientModInitializer {
 
     public static DefaultSkinHelper.Skin getNonLocalSkin() {
         return new DefaultSkinHelper.Skin(CACHED_SKIN_ID.toString(), getModel());
-    }
-
-    public static boolean shouldUseCachedMetadataSkin() {
-        return FabricLoaderImpl.INSTANCE.isDevelopmentEnvironment();
     }
 
     public static void copySkinFromMemoryToCache(TextureManager manager) throws IOException {
